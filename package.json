@@ -1,0 +1,22 @@
+{
+  "name": "mavin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mavin - Unified AI Companion with Agentic OS",
+  "scripts": {
+    "dev": "./scripts/dev.sh",
+    "setup": "./scripts/setup.sh",
+    "build": "pnpm -r build",
+    "clean": "pnpm -r clean && rm -rf node_modules",
+    "format": "prettier --write .",
+    "check": "pnpm -r check"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  },
+  "packageManager": "pnpm@10.15.1",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  }
+}
