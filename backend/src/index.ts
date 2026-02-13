@@ -9,6 +9,7 @@ import visionRouter from './routes/vision.js';
 import contextRouter from './routes/context.js';
 import testRouter from './routes/test.js';
 import promptsRouter from './routes/prompts.js';
+import aiRouter from './routes/ai.js';
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use('/api/vision', visionRouter);
 app.use('/api/context', contextRouter);
 app.use('/api/test', testRouter);
 app.use('/api/prompts', promptsRouter);
+app.use('/api/ai', aiRouter);
 
 // Start server
 app.listen(config.port, () => {
