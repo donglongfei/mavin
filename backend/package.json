@@ -19,10 +19,12 @@
   "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
+    "@types/multer": "^2.0.0",
     "axios": "^1.13.5",
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
     "express": "^4.22.1",
+    "multer": "^2.0.2",
     "openai": "^6.21.0"
   },
   "devDependencies": {
