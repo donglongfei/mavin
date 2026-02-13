@@ -1,6 +1,6 @@
 /**
  * Cyberpunk Lab - Right Pane (AI Copilot)
- * 
+ *
  * Features: Chat interface, Voice mode, Thinking logs, Context awareness
  * Design: Purple accents for AI, scan line animation, glassmorphic
  */
@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import DigitalAvatar from "./DigitalAvatar";
 import { useState } from "react";
-import { mavinAPI } from "@/lib/mavin-api";
+import { apiClient } from "@mavin/shared";
 import { nanoid } from "nanoid";
 
 interface Message {
@@ -54,6 +54,7 @@ export default function RightPane() {
   const [isThinking, setIsThinking] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [avatarState, setAvatarState] = useState<"idle" | "speaking" | "thinking" | "listening">("idle");
+  const [conversationId] = useState(`conv_${nanoid()}`); // Single conversation ID for continuity
 
   const handleSend = async () => {
     if (!inputValue.trim()) return;
@@ -71,9 +72,18 @@ export default function RightPane() {
     setAvatarState("thinking");
 
     try {
-      // Real API call to backend
-      const response = await mavinAPI.executeAgent(inputValue, {
-        messages: messages.slice(-5), // Last 5 messages for context
+      // Use OpenClaw via apiClient
+      console.log('Calling chat API with:', {
+        message: inputValue,
+        conversationId: conversationId,
+        model: 'claude'
+      });
+
+      const response = await apiClient.chat({
+        message: inputValue,
+        conversationId: conversationId, // Maintain conversation context
+        model: "claude", // or "gpt-4"
+        // persona: "leo", // Optional: uncomment to use a persona
       });
 
       const aiMessage: Message = {
@@ -91,12 +101,17 @@ export default function RightPane() {
         setAvatarState("idle");
       }, 3000);
     } catch (error) {
-      console.error("Agent execution failed:", error);
+      console.error("Chat failed:", error);
+      console.error("Error details:", {
+        message: error.message,
+        stack: error.stack,
+        error: error
+      });
 
       const errorMessage: Message = {
         id: nanoid(),
         role: "system",
-        content: "Sorry, I encountered an error. Please try again.",
+        content: `Sorry, I encountered an error: ${error.message || 'Unknown error'}. Please check console.`,
         timestamp: new Date(),
       };
 
@@ -125,14 +140,14 @@ export default function RightPane() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Digital Avatar */}
-      <div className="p-4 border-b border-border/50">
+      <div className="p-4 border-b border-border/50 flex-shrink-0">
         <DigitalAvatar state={avatarState} onVoiceClick={handleVoiceClick} />
       </div>
 
       {/* Header */}
-      <div className="px-4 py-3 border-b border-border/50">
+      <div className="px-4 py-3 border-b border-border/50 flex-shrink-0">
         {/* Thinking Indicator */}
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-neon-purple to-neon-cyan flex items-center justify-center">
@@ -145,9 +160,9 @@ export default function RightPane() {
         </div>
       </div>
 
-      {/* Messages */}
-      <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4">
+      {/* Messages - Scrollable area that takes remaining space */}
+      <ScrollArea className="flex-1 overflow-y-auto">
+        <div className="p-4 space-y-4">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -180,10 +195,10 @@ export default function RightPane() {
         </div>
       </ScrollArea>
 
-      <Separator className="bg-border/50" />
+      <Separator className="bg-border/50 flex-shrink-0" />
 
-      {/* Input */}
-      <div className="p-4">
+      {/* Input - Fixed at bottom */}
+      <div className="p-4 flex-shrink-0">
         <div className="flex gap-2">
           <Input
             placeholder="Ask Mavin anything..."

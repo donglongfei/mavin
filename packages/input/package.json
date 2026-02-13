@@ -1,0 +1,16 @@
+{
+  "name": "@mavin/input",
+  "version": "0.1.0",
+  "description": "Input components for Mavin project",
+  "main": "index.ts",
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^19.2.1",
+    "@mavin/shared": "workspace:*"
+  },
+  "keywords": ["mavin", "input"],
+  "author": "Mavin Team",
+  "license": "MIT"
+}

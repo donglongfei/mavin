@@ -3,14 +3,16 @@ import type { ChatRequest, ChatResponse } from '../types/api.js';
 import { logger } from '../utils/logger.js';
 import { languageModel } from '../services/LanguageModelInterface.js';
 import { promptManager } from '../services/PromptManager.js';
+import { OpenClawService } from '../services/openclaw.js';
 import type { ModelName } from '../types/language-model.js';
 import type { PersonaType } from '../types/prompts.js';
 
 const router = Router();
+const openClawService = new OpenClawService();
 
 /**
  * POST /api/chat/chat
- * Chat with AI using LanguageModelInterface with persona support
+ * Chat with AI using OpenClaw
  */
 router.post('/chat', async (req: Request<{}, {}, ChatRequest>, res: Response<ChatResponse>) => {
   try {
@@ -21,47 +23,26 @@ router.post('/chat', async (req: Request<{}, {}, ChatRequest>, res: Response<Cha
       return;
     }
 
-    logger.info(`Chat request: ${message.substring(0, 50)}... (model: ${model}, persona: ${persona || 'none'})`);
+    logger.info(`Chat request (OpenClaw): ${message.substring(0, 50)}... (model: ${model}, persona: ${persona || 'none'})`);
 
-    // Map simple model names to full model names
-    const modelMap: Record<string, ModelName> = {
-      'claude': 'claude-3-5-sonnet-20241022',
-      'gpt-4': 'gpt-4-turbo',
-      'gpt-3.5': 'gpt-3.5-turbo',
-    };
-
-    const fullModelName = modelMap[model] || (model as ModelName);
-
-    // Build messages array with optional system prompt
-    const messages: any[] = [];
-
-    // Add system prompt if persona is specified
+    // Prepare message with persona context if specified
+    let finalMessage = message;
     if (persona) {
       const context = promptManager.generateContext({
         currentTime: new Date(),
         conversationHistory: [],
       });
       const systemPrompt = promptManager.getPrompt(persona as PersonaType, context);
-      messages.push({
-        role: 'system',
-        content: systemPrompt,
-      });
+      // Prepend system prompt to the message for OpenClaw
+      finalMessage = `${systemPrompt}\n\nUser: ${message}`;
     }
 
-    // Add user message
-    messages.push({
-      role: 'user',
-      content: message,
-    });
-
-    // Use LanguageModelInterface for AI response
-    const aiResponse = await languageModel.chat(
-      {
-        messages,
-        model: fullModelName,
-        temperature: 0.7,
-      },
-      conversationId
+    // Use OpenClaw for AI response
+    const modelType = model.toLowerCase().includes('gpt') ? 'gpt-4' : 'claude';
+    const aiResponse = await openClawService.chat(
+      finalMessage,
+      conversationId || `conv_${Date.now()}`,
+      modelType
     );
 
     const response: ChatResponse = {

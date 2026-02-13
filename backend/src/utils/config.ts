@@ -3,9 +3,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const config = {
-  port: process.env.PORT || 8000,
+  port: process.env.PORT || 8002,
   nodeEnv: process.env.NODE_ENV || 'development',
-  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3003',
 
   openai: {
     apiKey: process.env.OPENAI_API_KEY || 'dummy-key-for-dev',

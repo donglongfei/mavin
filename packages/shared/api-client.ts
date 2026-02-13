@@ -27,7 +27,7 @@ export class ApiClient {
   private ws: WebSocket | null = null;
   private wsEventHandlers: Map<WebSocketEventType, Set<(payload: any) => void>> = new Map();
 
-  constructor(baseUrl: string = 'http://localhost:3001/api', useMock: boolean = true) {
+  constructor(baseUrl: string = 'http://localhost:8002/api', useMock: boolean = false) {
     this.baseUrl = baseUrl;
     this.useMock = useMock;
   }
@@ -40,7 +40,7 @@ export class ApiClient {
   }
 
   /**
-   * POST /api/chat
+   * POST /api/chat/chat
    * Send a chat message and receive AI response
    */
   async chat(request: ChatRequest): Promise<ChatResponse> {
@@ -48,7 +48,7 @@ export class ApiClient {
       return this.mockChat(request);
     }
 
-    const response = await fetch(`${this.baseUrl}/chat`, {
+    const response = await fetch(`${this.baseUrl}/chat/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request),
@@ -382,5 +382,5 @@ export class ApiClient {
   }
 }
 
-// Export singleton instance
-export const apiClient = new ApiClient();
+// Export singleton instance - connected to backend on port 8002
+export const apiClient = new ApiClient('http://localhost:8002/api', false);

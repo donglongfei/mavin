@@ -1,0 +1,17 @@
+{
+  "name": "@mavin/avatar",
+  "version": "0.1.0",
+  "description": "Avatar components for Mavin project",
+  "main": "index.ts",
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^19.2.1",
+    "framer-motion": "^12.23.22",
+    "@mavin/shared": "workspace:*"
+  },
+  "keywords": ["mavin", "avatar"],
+  "author": "Mavin Team",
+  "license": "MIT"
+}

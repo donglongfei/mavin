@@ -1,0 +1,16 @@
+{
+  "name": "@mavin/display",
+  "version": "0.1.0",
+  "description": "Display components for Mavin project",
+  "main": "index.ts",
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^19.2.1",
+    "@mavin/shared": "workspace:*"
+  },
+  "keywords": ["mavin", "display"],
+  "author": "Mavin Team",
+  "license": "MIT"
+}

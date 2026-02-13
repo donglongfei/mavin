@@ -238,7 +238,53 @@ importers:
         specifier: ^2.1.4
         version: 2.1.9(@types/node@24.10.13)(lightningcss@1.30.2)
 
-  packages/shared: {}
+  packages/avatar:
+    dependencies:
+      '@mavin/shared':
+        specifier: workspace:*
+        version: link:../shared
+      framer-motion:
+        specifier: ^12.23.22
+        version: 12.34.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react:
+        specifier: ^19.2.1
+        version: 19.2.4
+
+  packages/display:
+    dependencies:
+      '@mavin/shared':
+        specifier: workspace:*
+        version: link:../shared
+      react:
+        specifier: ^19.2.1
+        version: 19.2.4
+
+  packages/input:
+    dependencies:
+      '@mavin/shared':
+        specifier: workspace:*
+        version: link:../shared
+      react:
+        specifier: ^19.2.1
+        version: 19.2.4
+
+  packages/output:
+    dependencies:
+      '@mavin/shared':
+        specifier: workspace:*
+        version: link:../shared
+      framer-motion:
+        specifier: ^12.23.22
+        version: 12.34.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react:
+        specifier: ^19.2.1
+        version: 19.2.4
+
+  packages/shared:
+    dependencies:
+      zustand:
+        specifier: ^5.0.11
+        version: 5.0.11(@types/react@19.2.14)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
 
   packages/types: {}
 
