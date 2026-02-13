@@ -18,10 +18,12 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.74.0",
     "axios": "^1.13.5",
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
-    "express": "^4.22.1"
+    "express": "^4.22.1",
+    "openai": "^6.21.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

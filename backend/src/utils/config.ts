@@ -8,12 +8,12 @@ export const config = {
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
 
   openai: {
-    apiKey: process.env.OPENAI_API_KEY || '',
-    model: process.env.OPENAI_MODEL || 'gpt-4',
+    apiKey: process.env.OPENAI_API_KEY || 'dummy-key-for-dev',
+    model: process.env.OPENAI_MODEL || 'gpt-4-turbo',
   },
 
   anthropic: {
-    apiKey: process.env.ANTHROPIC_API_KEY || '',
+    apiKey: process.env.ANTHROPIC_API_KEY || 'dummy-key-for-dev',
     model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
   },
 
