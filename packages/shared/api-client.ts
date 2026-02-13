@@ -374,7 +374,7 @@ export class ApiClient {
       this.handleWebSocketEvent({
         type: 'message.proactive',
         payload: {
-          message: 'Hey! I noticed you've been working for a while. Want to take a break?',
+            message: 'Hey! I noticed you have been working for a while. Want to take a break?',
           priority: 'medium',
         },
       });
