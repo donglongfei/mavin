@@ -2,24 +2,26 @@ import { Router, Request, Response } from 'express';
 import type { ChatRequest, ChatResponse } from '../types/api.js';
 import { logger } from '../utils/logger.js';
 import { languageModel } from '../services/LanguageModelInterface.js';
+import { promptManager } from '../services/PromptManager.js';
 import type { ModelName } from '../types/language-model.js';
+import type { PersonaType } from '../types/prompts.js';
 
 const router = Router();
 
 /**
  * POST /api/chat/chat
- * Chat with AI using LanguageModelInterface
+ * Chat with AI using LanguageModelInterface with persona support
  */
 router.post('/chat', async (req: Request<{}, {}, ChatRequest>, res: Response<ChatResponse>) => {
   try {
-    const { message, conversationId, model = 'claude' } = req.body;
+    const { message, conversationId, model = 'claude', persona } = req.body;
 
     if (!message) {
       res.status(400).json({ error: 'Message is required' } as any);
       return;
     }
 
-    logger.info(`Chat request: ${message.substring(0, 50)}... (model: ${model})`);
+    logger.info(`Chat request: ${message.substring(0, 50)}... (model: ${model}, persona: ${persona || 'none'})`);
 
     // Map simple model names to full model names
     const modelMap: Record<string, ModelName> = {
@@ -30,15 +32,32 @@ router.post('/chat', async (req: Request<{}, {}, ChatRequest>, res: Response<Cha
 
     const fullModelName = modelMap[model] || (model as ModelName);
 
+    // Build messages array with optional system prompt
+    const messages: any[] = [];
+
+    // Add system prompt if persona is specified
+    if (persona) {
+      const context = promptManager.generateContext({
+        currentTime: new Date(),
+        conversationHistory: [],
+      });
+      const systemPrompt = promptManager.getPrompt(persona as PersonaType, context);
+      messages.push({
+        role: 'system',
+        content: systemPrompt,
+      });
+    }
+
+    // Add user message
+    messages.push({
+      role: 'user',
+      content: message,
+    });
+
     // Use LanguageModelInterface for AI response
     const aiResponse = await languageModel.chat(
       {
-        messages: [
-          {
-            role: 'user',
-            content: message,
-          },
-        ],
+        messages,
         model: fullModelName,
         temperature: 0.7,
       },

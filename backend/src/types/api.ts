@@ -2,6 +2,7 @@ export interface ChatRequest {
   message: string;
   conversationId?: string;
   model?: 'gpt-4' | 'claude';
+  persona?: 'leo' | 'sarah' | 'timmy';
 }
 
 export interface ChatResponse {

@@ -8,6 +8,7 @@ import imageRouter from './routes/image.js';
 import visionRouter from './routes/vision.js';
 import contextRouter from './routes/context.js';
 import testRouter from './routes/test.js';
+import promptsRouter from './routes/prompts.js';
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/api/image', imageRouter);
 app.use('/api/vision', visionRouter);
 app.use('/api/context', contextRouter);
 app.use('/api/test', testRouter);
+app.use('/api/prompts', promptsRouter);
 
 // Start server
 app.listen(config.port, () => {
