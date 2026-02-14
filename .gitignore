@@ -56,3 +56,6 @@ ENV/
 .cache/
 .temp/
 .tmp/
+
+# AI Models (too large for git)
+models/

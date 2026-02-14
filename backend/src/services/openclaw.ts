@@ -136,6 +136,24 @@ export class OpenClawService {
   }
 
   /**
+   * Test connection to Kimi (via OpenClaw)
+   */
+  async testKimi(): Promise<boolean> {
+    try {
+      logger.info('Testing Kimi connection...');
+
+      // OpenClaw will use the default model from config (kimi-coding/k2p5)
+      const response = await this.chat('Say "Kimi connected" if you can read this.');
+
+      logger.info('Kimi test response:', response.content.substring(0, 100));
+      return response.provider === 'kimi-coding' || response.content.includes('Kimi');
+    } catch (error) {
+      logger.error('Kimi test failed:', error);
+      return false;
+    }
+  }
+
+  /**
    * Clear conversation history for a given conversation ID
    */
   clearConversation(conversationId: string): void {

@@ -435,6 +435,229 @@ project/
 
 ---
 
+## 11. Resizable Panel Layout Pattern
+
+### Process: Create Responsive, Resizable UI Layouts
+
+**When to use:** Multi-pane applications where users need to adjust panel sizes
+
+**Steps:**
+
+1. **Install resizable panel library**
+   ```bash
+   pnpm add react-resizable-panels
+   ```
+
+2. **Create resizable layout**
+   ```typescript
+   import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+
+   <ResizablePanelGroup direction="horizontal">
+     <ResizablePanel defaultSize={15} minSize={12} maxSize={25}>
+       {leftContent}
+     </ResizablePanel>
+
+     <ResizableHandle className="w-1 hover:bg-accent transition-colors" />
+
+     <ResizablePanel defaultSize={50} minSize={30}>
+       {middleContent}
+     </ResizablePanel>
+
+     <ResizableHandle />
+
+     <ResizablePanel defaultSize={35} minSize={25} maxSize={50}>
+       {rightContent}
+     </ResizablePanel>
+   </ResizablePanelGroup>
+   ```
+
+3. **Set size constraints**
+   - `defaultSize`: Initial panel size (percentage)
+   - `minSize`: Minimum size to prevent too small panels
+   - `maxSize`: Maximum size to prevent full-screen takeover
+
+4. **Style resize handles**
+   ```css
+   .resize-handle {
+     background: rgba(0, 0, 0, 0.1);
+     transition: all 0.2s ease;
+   }
+   .resize-handle:hover {
+     background: var(--accent-color);
+     box-shadow: 0 0 10px var(--glow-color);
+   }
+   ```
+
+**Key Principle:** User control + sensible constraints = better UX
+
+---
+
+## 12. Custom Scrollbar Styling Pattern
+
+### Process: Create Elegant, Themed Scrollbars
+
+**When to use:** Custom-designed applications with specific color themes
+
+**Implementation:**
+
+```css
+/* Webkit browsers (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+  width: 6px;  /* Slim scrollbar */
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);  /* Subtle track */
+  border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    var(--color-1) 0%,
+    var(--color-2) 100%
+  );
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    var(--color-1-bright) 0%,
+    var(--color-2-bright) 100%
+  );
+  box-shadow: 0 0 8px var(--glow-color);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--thumb-color) var(--track-color);
+}
+```
+
+**Design Tips:**
+- Keep width slim (6-8px) for elegance
+- Use transparent/subtle track colors
+- Add gradient to thumb for visual interest
+- Include hover state with glow effect
+- Match app's color theme
+- Ensure cross-browser compatibility
+
+**Key Principle:** Slim + themed + interactive = elegant scrollbars
+
+---
+
+## 13. Local Voice Service Integration Pattern
+
+### Process: Add TTS and ASR with GPU Support
+
+**When to use:** Applications requiring local voice capabilities (privacy, offline, low latency)
+
+**Architecture:**
+
+```
+User Audio → ASR (Whisper) → GPU/CPU → Text
+                                          ↓
+                                    AI Processing
+                                          ↓
+AI Text → TTS (Piper) → CPU → Audio → User
+```
+
+**Implementation Steps:**
+
+1. **Python Service Layer**
+   ```python
+   # local_asr.py - ASR using faster-whisper
+   def transcribe_audio(audio_path, model_size='base'):
+       model = WhisperModel(model_size, device='auto')
+       segments, info = model.transcribe(audio_path)
+       return {'text': text, 'language': info.language}
+
+   # local_tts.py - TTS using piper
+   def synthesize_speech(text, voice='en_US-lessac-medium'):
+       voice_model = PiperVoice.load(model_file)
+       voice_model.synthesize(text, output_file)
+       return {'audio_path': output_file}
+   ```
+
+2. **Node.js Wrapper Services**
+   ```typescript
+   export class LocalASRService {
+     async transcribe(audioPath: string): Promise<ASRResult> {
+       const cmd = `python3 local_asr.py "${audioPath}"`;
+       const { stdout } = await execAsync(cmd);
+       return JSON.parse(stdout);
+     }
+   }
+
+   export class LocalTTSService {
+     async synthesize(text: string): Promise<TTSResult> {
+       const cmd = `python3 local_tts.py "${text}"`;
+       const { stdout } = await execAsync(cmd);
+       return JSON.parse(stdout);
+     }
+   }
+   ```
+
+3. **Unified Voice Service**
+   ```typescript
+   export class LocalVoiceService {
+     async conversationTurn(audioPath, chatFn): Promise<Result> {
+       const userText = await asr.transcribe(audioPath);
+       const aiText = await chatFn(userText);
+       const aiAudio = await tts.synthesize(aiText);
+       return { userText, aiText, aiAudio };
+     }
+   }
+   ```
+
+4. **API Routes with File Upload**
+   ```typescript
+   router.post('/voice/conversation', upload.single('audio'), async (req, res) => {
+     const result = await localVoice.conversationTurn(
+       req.file.path,
+       (text) => aiService.chat(text)
+     );
+     res.json(result);
+   });
+   ```
+
+**GPU Support Strategy:**
+
+1. Auto-detect available device: MUSA → CUDA → CPU
+2. Graceful fallback to CPU if GPU unavailable
+3. Log device being used for transparency
+
+```python
+def check_device():
+    if has_musa(): return 'musa'
+    if has_cuda(): return 'cuda'
+    return 'cpu'
+```
+
+**Dependencies:**
+- Python: `faster-whisper`, `piper-tts`
+- Node: `multer` (file upload)
+- Optional: `torch-musa` (MUSA GPU), `torch` (CUDA)
+
+**Model Management:**
+- Models auto-download on first use
+- Store in `~/.cache/whisper/` and `~/.local/share/piper/`
+- Size: 145MB-3GB depending on quality
+
+**Performance Tips:**
+- ASR: Use `base` model for CPU, `small`+ for GPU
+- TTS: Very fast on CPU (~0.3s per sentence)
+- Cache transcriptions for repeated audio
+- Clean up old audio files regularly
+
+**Key Principle:** Local processing = privacy + speed, with GPU acceleration when available
+
+---
+
 ## Summary Checklist
 
 When starting a new full-stack project:
@@ -451,6 +674,8 @@ When starting a new full-stack project:
 - [ ] Check for port conflicts before starting
 - [ ] Use hard refresh when testing frontend changes
 - [ ] Document configuration in .env.example
+- [ ] Implement resizable panels for better UX (if multi-pane)
+- [ ] Style scrollbars to match theme (slim, elegant)
 
 ---
 

@@ -1,282 +1,100 @@
-# Mavin - Unified AI Companion
+# Mavin - AI-Powered Learning Assistant
 
-A unified monorepo combining the beautiful cyberpunk UI from mavin-aibook-poc with the powerful backend infrastructure from mavin-os.
+Mavin is a full-stack AI-powered learning assistant with a cyberpunk-themed interface, featuring voice interaction, contextual awareness, and multi-modal AI capabilities.
 
-## Architecture
+## Quick Start
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Frontend (React + Vite)                  │
-│              Cyberpunk 3-Pane UI + Digital Avatar           │
-│                     Port: 3000                              │
-└────────────────────┬────────────────────────────────────────┘
-                     │ HTTP/REST
-┌────────────────────▼────────────────────────────────────────┐
-│                Backend API (FastAPI)                        │
-│          Agent Execution + Memory Management                │
-│                     Port: 8000                              │
-└─────────┬──────────────────────────┬────────────────────────┘
-          │                          │
-          │ HTTP                     │ HTTP
-          ▼                          ▼
-┌─────────────────────┐    ┌──────────────────────┐
-│  Agent Service      │    │  Qdrant Vector DB    │
-│  (OpenClaw Wrapper) │    │  (Semantic Memory)   │
-│  Port: 8001         │    │  Port: 6333          │
-└─────────────────────┘    └──────────────────────┘
+```bash
+# Install dependencies
+pnpm install
+
+# Start backend
+cd backend
+pnpm dev
+
+# Start frontend (in another terminal)
+cd apps/web
+pnpm dev
 ```
 
 ## Features
 
-### Frontend (apps/web)
-- **Cyberpunk 3-Pane Layout**: Context Manager, Dynamic Workspace, AI Copilot
-- **Digital Avatar**: 4 animated states (idle, speaking, thinking, listening)
-- **Three View Modes**: Timeline, Canvas, Notebook
-- **Real-time Chat**: Connected to backend AI agent
-- **Smart Widgets**: Audio player, action items, deep dive cards
+- 🎨 **Cyberpunk UI** - Glassmorphic design with neon accents
+- 🤖 **AI Chat** - Integration with Claude/GPT-4 via OpenClaw
+- 🎤 **Voice Interaction** - Local ASR (MooER) and TTS with MUSA GPU support
+- 📝 **Context Management** - Track and organize your learning context
+- 🖼️ **Multi-modal** - Vision and image generation capabilities
+- ⚡ **Real-time** - Resizable panels and smooth interactions
 
-### Backend (services/api)
-- **Agent Execution**: OpenClaw integration for AI tasks
-- **Vector Memory**: Qdrant-based semantic memory storage
-- **REST API**: Comprehensive endpoints for agent and memory operations
-- **Session Management**: Persistent agent sessions
+## Documentation
 
-### Agent Service (services/agent-service)
-- **OpenClaw Wrapper**: Subprocess execution of OpenClaw CLI
-- **Session Persistence**: Maintains conversation context
-- **Health Monitoring**: Status and version checks
+All documentation is in the [`docs/`](./docs) folder:
 
-## Quick Start
+### Getting Started
+- [Quick Start Guide](./docs/QUICK_START.md) - Get up and running quickly
+- [System Design](./docs/SYSTEM_DESIGN.md) - Architecture overview
+- [Development Plan](./docs/DEVELOPMENT_PLAN.md) - Roadmap and tasks
 
-### Prerequisites
+### Voice Services
+- [MUSA Voice Guide](./docs/MUSA_VOICE_GUIDE.md) - MUSA-native ASR/TTS setup
+- [MUSA Voice Summary](./docs/MUSA_VOICE_SUMMARY.md) - Quick overview
+- [Voice Implementation](./docs/VOICE_IMPLEMENTATION.md) - Implementation details
+- [Voice Setup](./docs/VOICE_SETUP.md) - Complete setup guide
+- [Voice Quickstart](./docs/VOICE_QUICKSTART.md) - Quick start for voice
 
-- Node.js 22+
-- pnpm 10+
-- Python 3.8+
-- Docker (for Qdrant)
-- OpenClaw CLI installed at `/home/mt/npm-global/bin/openclaw-wrapper`
+### Development
+- [Skills](./docs/SKILLS.md) - Reusable patterns and templates
+- [Lessons Learned](./docs/LESSONS.md) - Mistakes and how to avoid them
+- [Tasks](./docs/TASKS.md) - Task tracking and planning
+- [Test Report](./docs/TEST_REPORT.md) - Testing documentation
 
-### Installation
+### UI/UX
+- [UX Specification](./docs/UX_SPECIFICATION.md) - Design specifications
+- [UI Architecture](./docs/UNIVERSAL_UI_ARCHITECTURE.md) - UI structure
 
-```bash
-# 1. Install dependencies
-cd /home/mt/mavin
-pnpm install
+### Other
+- [Notes](./docs/NOTES.md) - Development notes
+- [OpenClaw Integration Fix](./docs/OPENCLAW_INTEGRATION_FIX.md) - Integration guide
+- [Rename Summary](./docs/RENAME_SUMMARY.md) - Project renaming notes
 
-# 2. Install Python dependencies
-cd services/api
-pip3 install -r requirements.txt
+## Tech Stack
 
-cd ../agent-service
-pip3 install -r requirements.txt
+- **Frontend**: React, TypeScript, Vite, TailwindCSS
+- **Backend**: Node.js, Express, TypeScript
+- **AI**: OpenClaw (Claude/GPT-4), MooER ASR
+- **Voice**: MUSA GPU-accelerated (Moore Threads)
+- **Database**: TBD
+- **Deployment**: TBD
 
-# 3. Set up environment
-cd /home/mt/mavin
-cp .env.example .env
-# Edit .env if needed
+## Hardware Requirements
 
-# 4. Start Qdrant (requires Docker permissions)
-# Option A: With docker-compose
-cd infra
-docker compose up -d qdrant
-
-# Option B: Direct docker run
-docker run -d --name mavin-qdrant \
-  -p 6333:6333 -p 6334:6334 \
-  -v mavin_qdrant_storage:/qdrant/storage \
-  qdrant/qdrant:latest
-```
-
-### Running Services
-
-#### Option 1: Use the dev script (recommended)
-```bash
-cd /home/mt/mavin
-./scripts/dev.sh
-```
-
-#### Option 2: Start services manually
-
-**Terminal 1 - Agent Service:**
-```bash
-cd /home/mt/mavin/services/agent-service
-uvicorn main:app --port 8001 --reload
-```
-
-**Terminal 2 - Backend API:**
-```bash
-cd /home/mt/mavin/services/api
-uvicorn app.main:app --port 8000 --reload
-```
-
-**Terminal 3 - Frontend:**
-```bash
-cd /home/mt/mavin/apps/web
-pnpm dev
-```
-
-### Access Points
-
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
-- **Agent Service**: http://localhost:8001
-- **Qdrant Dashboard**: http://localhost:6333/dashboard
+- **GPU**: Moore Threads S3000/S4000 (MUSA) or NVIDIA (CUDA) or CPU fallback
+- **RAM**: 8GB+ recommended
+- **Storage**: 5GB+ for models
 
 ## Project Structure
 
 ```
 mavin/
 ├── apps/
-│   └── web/                    # React frontend
-│       ├── client/
-│       │   ├── src/
-│       │   │   ├── components/ # UI components
-│       │   │   ├── lib/        # API client
-│       │   │   └── pages/      # Page components
-│       │   └── public/         # Static assets
-│       ├── package.json
-│       └── vite.config.ts
-│
-├── services/
-│   ├── api/                    # FastAPI backend
-│   │   ├── app/
-│   │   │   ├── api/routes/    # Endpoints
-│   │   │   ├── core/          # Config
-│   │   │   ├── models/        # Pydantic models
-│   │   │   ├── services/      # Business logic
-│   │   │   └── main.py
-│   │   └── requirements.txt
-│   │
-│   └── agent-service/          # OpenClaw wrapper
-│       ├── main.py
-│       └── requirements.txt
-│
+│   └── web/              # Frontend application
+├── backend/              # Backend API
+│   ├── src/              # Source code
+│   ├── python/           # Python services (ASR/TTS)
+│   └── public/           # Static files
 ├── packages/
-│   └── types/                  # Shared TypeScript types
-│       └── src/
-│           ├── agent.ts
-│           ├── memory.ts
-│           └── api.ts
-│
-├── infra/
-│   └── docker-compose.yml      # Docker orchestration
-│
-├── scripts/
-│   ├── dev.sh                  # Start all services
-│   └── setup.sh                # Initial setup
-│
-├── package.json                # Root workspace
-├── pnpm-workspace.yaml         # Workspace config
-└── .env                        # Environment variables
+│   └── shared/           # Shared code between frontend/backend
+└── docs/                 # Documentation
 ```
-
-## API Endpoints
-
-### Agent Operations
-- `POST /api/agent/execute` - Execute AI agent task
-- `GET /api/agent/status` - Get agent service status
-
-### Memory Operations
-- `POST /api/memory/store` - Store memory
-- `POST /api/memory/search` - Search memories
-- `GET /api/memory/stats` - Get memory statistics
-
-### Health
-- `GET /api/health` - Health check
-- `GET /api/ready` - Readiness check
-
-## Development
-
-### Frontend Development
-```bash
-cd apps/web
-pnpm dev          # Start dev server
-pnpm build        # Build for production
-pnpm check        # TypeScript check
-pnpm format       # Format code
-```
-
-### Backend Development
-```bash
-cd services/api
-uvicorn app.main:app --reload  # Start with hot reload
-```
-
-### Adding Dependencies
-
-**Frontend:**
-```bash
-cd apps/web
-pnpm add <package>
-```
-
-**Root:**
-```bash
-cd /home/mt/mavin
-pnpm add -w <package>
-```
-
-## Testing
-
-### Test Agent Execution
-```bash
-curl -X POST http://localhost:8000/api/agent/execute \
-  -H "Content-Type: application/json" \
-  -d '{"prompt":"Hello, who are you?","context":{}}'
-```
-
-### Test Memory Storage
-```bash
-curl -X POST http://localhost:8000/api/memory/store \
-  -H "Content-Type: application/json" \
-  -d '{"content":"Test memory","metadata":{"source":"test"}}'
-```
-
-### Test Memory Search
-```bash
-curl -X POST http://localhost:8000/api/memory/search \
-  -H "Content-Type: application/json" \
-  -d '{"query":"test","limit":5}'
-```
-
-## Environment Variables
-
-See `.env.example` for all available configuration options.
-
-Key variables:
-- `VITE_API_URL` - Frontend API URL (default: http://localhost:8000)
-- `QDRANT_HOST` - Qdrant host (default: localhost)
-- `AGENT_SERVICE_URL` - Agent service URL (default: http://localhost:8001)
-- `OPENCLAW_PATH` - Path to OpenClaw CLI
-
-## Troubleshooting
-
-### Frontend can't connect to backend
-- Check that backend is running on port 8000
-- Check CORS settings in `services/api/app/main.py`
-- Verify `VITE_API_URL` in `.env`
-
-### Agent execution fails
-- Check that OpenClaw is installed: `openclaw --version`
-- Verify `OPENCLAW_PATH` in `.env`
-- Check agent service logs
-
-### Qdrant connection fails
-- Ensure Qdrant is running: `curl http://localhost:6333/health`
-- Check Docker container: `docker ps | grep qdrant`
-- Verify `QDRANT_HOST` and `QDRANT_PORT` in `.env`
-
-### Docker permission denied
-- Add user to docker group: `sudo usermod -aG docker $USER`
-- Or run Qdrant with sudo (not recommended for production)
 
 ## License
 
-MIT
+[License TBD]
 
-## Credits
+## Contributing
 
-- Frontend UI: mavin-aibook-poc
-- Backend Infrastructure: mavin-os
-- AI Engine: OpenClaw + Kimi K2.5
+[Contributing guidelines TBD]
+
+## Support
+
+For issues and questions, please check the [documentation](./docs) or open an issue.

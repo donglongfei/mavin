@@ -2,6 +2,7 @@
   "name": "mavin",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Mavin - Unified AI Companion with Agentic OS",
   "scripts": {
     "dev": "./scripts/dev.sh",

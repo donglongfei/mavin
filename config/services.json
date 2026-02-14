@@ -1,0 +1,93 @@
+{
+  "$schema": "./services.schema.json",
+  "version": "1.0.0",
+  "services": {
+    "frontend": {
+      "name": "Frontend Web Application",
+      "type": "web",
+      "ports": {
+        "primary": 3000,
+        "fallback": [3001, 3002, 3003]
+      },
+      "url": "http://localhost:3000",
+      "healthCheck": "/",
+      "command": "pnpm dev",
+      "directory": "apps/web"
+    },
+    "backend": {
+      "name": "Backend API Server",
+      "type": "api",
+      "port": 8002,
+      "url": "http://localhost:8002",
+      "healthCheck": "/health",
+      "command": "pnpm dev",
+      "directory": "backend",
+      "cors": {
+        "origins": [
+          "http://localhost:3000",
+          "http://localhost:3001",
+          "http://localhost:3002",
+          "http://localhost:3003"
+        ]
+      }
+    },
+    "asr": {
+      "name": "ASR (FunASR Docker)",
+      "type": "docker",
+      "container": {
+        "name": "local_asr_server",
+        "image": "sh-harbor.mthreads.com/mt-ai/local_asr_server:1.0",
+        "imagePath": "infra/docker/m1000_local_asr_server.tar"
+      },
+      "port": 10095,
+      "protocol": "wss",
+      "url": "wss://localhost:10095",
+      "healthCheck": null,
+      "ssl": {
+        "enabled": true,
+        "rejectUnauthorized": false
+      }
+    },
+    "tts": {
+      "name": "TTS (MT-LiteTTS)",
+      "type": "python",
+      "ports": {
+        "primary": 5001,
+        "fallback": [5002]
+      },
+      "script": "backend/python/mt_litetts_ws_server.py",
+      "healthCheck": null
+    },
+    "openclaw": {
+      "name": "OpenClaw AI CLI",
+      "type": "cli",
+      "command": "openclaw",
+      "healthCheck": "openclaw --version"
+    }
+  },
+  "api": {
+    "baseUrl": "http://localhost:8002",
+    "endpoints": {
+      "health": "/health",
+      "chat": "/api/chat",
+      "voice": {
+        "asr": "/api/voice/asr",
+        "tts": "/api/voice/tts",
+        "status": "/api/voice/status",
+        "conversation": "/api/voice/conversation"
+      },
+      "speech": "/api/speech",
+      "image": "/api/image",
+      "vision": "/api/vision",
+      "services": {
+        "health": "/api/services/health"
+      }
+    }
+  },
+  "paths": {
+    "logs": "logs",
+    "pids": ".pids",
+    "uploads": "/tmp/mavin-uploads",
+    "audio": "backend/public/audio"
+  }
+}

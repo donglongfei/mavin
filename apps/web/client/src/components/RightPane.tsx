@@ -16,9 +16,11 @@ import {
   Brain
 } from "lucide-react";
 import DigitalAvatar from "./DigitalAvatar";
-import { useState } from "react";
+import ServiceStatus from "./ServiceStatus";
+import { useState, useEffect, useRef } from "react";
 import { apiClient } from "@mavin/shared";
 import { nanoid } from "nanoid";
+import { VoiceConversation } from "@/services/voiceConversation";
 
 interface Message {
   id: string;
@@ -55,6 +57,64 @@ export default function RightPane() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [avatarState, setAvatarState] = useState<"idle" | "speaking" | "thinking" | "listening">("idle");
   const [conversationId] = useState(`conv_${nanoid()}`); // Single conversation ID for continuity
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const voiceConversationRef = useRef<VoiceConversation | null>(null);
+
+  // Initialize voice conversation service
+  useEffect(() => {
+    voiceConversationRef.current = new VoiceConversation({
+      conversationId: conversationId, // Maintain same conversation context
+      onStateChange: (state) => {
+        setAvatarState(state);
+        if (state === 'thinking') {
+          setIsThinking(true);
+        } else if (state === 'idle') {
+          setIsThinking(false);
+          setIsVoiceMode(false);
+        }
+      },
+      onTranscript: (text) => {
+        // Add user's spoken message to chat
+        const userMessage: Message = {
+          id: nanoid(),
+          role: "user",
+          content: text,
+          timestamp: new Date()
+        };
+        setMessages((prev) => [...prev, userMessage]);
+      },
+      onResponse: (text) => {
+        // Add AI response to chat
+        const aiMessage: Message = {
+          id: nanoid(),
+          role: "assistant",
+          content: text,
+          timestamp: new Date()
+        };
+        setMessages((prev) => [...prev, aiMessage]);
+      },
+      onError: (error) => {
+        console.error('Voice conversation error:', error);
+        const errorMessage: Message = {
+          id: nanoid(),
+          role: "system",
+          content: `Voice error: ${error.message}`,
+          timestamp: new Date()
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+      }
+    });
+
+    // Cleanup on unmount
+    return () => {
+      voiceConversationRef.current?.cleanup();
+    };
+  }, [conversationId]);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSend = async () => {
     if (!inputValue.trim()) return;
@@ -86,6 +146,9 @@ export default function RightPane() {
         // persona: "leo", // Optional: uncomment to use a persona
       });
 
+      console.log('Got response from API:', response);
+      console.log('Response content:', response.response);
+
       const aiMessage: Message = {
         id: nanoid(),
         role: "assistant",
@@ -93,7 +156,14 @@ export default function RightPane() {
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, aiMessage]);
+      console.log('Created AI message:', aiMessage);
+
+      setMessages((prev) => {
+        console.log('Previous messages:', prev.length);
+        const newMessages = [...prev, aiMessage];
+        console.log('New messages:', newMessages.length);
+        return newMessages;
+      });
       setAvatarState("speaking");
 
       // Return to idle after speaking animation
@@ -129,40 +199,69 @@ export default function RightPane() {
     }
   };
 
-  const handleVoiceClick = () => {
+  const handleVoiceClick = async () => {
+    if (!voiceConversationRef.current) return;
+
     if (avatarState === "listening") {
-      setAvatarState("idle");
+      // Stop listening and process the audio
+      voiceConversationRef.current.stopListening();
       setIsVoiceMode(false);
     } else {
-      setAvatarState("listening");
-      setIsVoiceMode(true);
+      // Start listening
+      try {
+        await voiceConversationRef.current.startListening();
+        setIsVoiceMode(true);
+      } catch (error) {
+        console.error('Failed to start voice conversation:', error);
+        const errorMessage: Message = {
+          id: nanoid(),
+          role: "system",
+          content: `Failed to start microphone: ${error.message}. Please check permissions.`,
+          timestamp: new Date()
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+      }
     }
   };
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Digital Avatar */}
-      <div className="p-4 border-b border-border/50 flex-shrink-0">
-        <DigitalAvatar state={avatarState} onVoiceClick={handleVoiceClick} />
+      {/* Digital Avatar - Smaller */}
+      <div className="p-2 border-b border-border/50 flex-shrink-0">
+        <div className="max-w-[200px] mx-auto">
+          <DigitalAvatar state={avatarState} onVoiceClick={handleVoiceClick} />
+        </div>
       </div>
 
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-border/50 flex-shrink-0">
-        {/* Thinking Indicator */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-neon-purple to-neon-cyan flex items-center justify-center">
-            <Sparkles className="h-4 w-4 text-background" />
+      {/* Header - Compact */}
+      <div className="px-4 py-2 border-b border-border/50 flex-shrink-0">
+        <div className="flex items-center justify-between gap-3">
+          {/* Thinking Indicator */}
+          <div className="flex items-center gap-2 flex-1">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-neon-purple to-neon-cyan flex items-center justify-center">
+              {isThinking ? (
+                <Loader2 className="h-3 w-3 text-background animate-spin" />
+              ) : (
+                <Sparkles className="h-3 w-3 text-background" />
+              )}
+            </div>
+            <div>
+              <h2 className="font-semibold orbitron text-xs">MAVIN AI</h2>
+              <p className="text-[10px] text-muted-foreground">
+                {isThinking ? "Thinking..." : "Your Digital Companion"}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="font-semibold orbitron text-sm">MAVIN AI</h2>
-            <p className="text-xs text-muted-foreground">Your Digital Companion</p>
-          </div>
+
+          {/* Service Status - Compact */}
+          <ServiceStatus compact={true} />
         </div>
       </div>
 
       {/* Messages - Scrollable area that takes remaining space */}
       <ScrollArea className="flex-1 overflow-y-auto">
         <div className="p-4 space-y-4">
+          {console.log('Rendering messages:', messages.length, messages)}
           {messages.map((message) => (
             <div
               key={message.id}
@@ -192,32 +291,38 @@ export default function RightPane() {
               </span>
             </div>
           ))}
+          <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
 
       <Separator className="bg-border/50 flex-shrink-0" />
 
-      {/* Input - Fixed at bottom */}
-      <div className="p-4 flex-shrink-0">
+      {/* Input - Fixed at bottom - Compact */}
+      <div className="p-3 flex-shrink-0">
         <div className="flex gap-2">
           <Input
             placeholder="Ask Mavin anything..."
-            className="flex-1 bg-card/50 border-border/50 focus:border-neon-purple/50 focus:ring-neon-purple/20"
+            className="flex-1 bg-card/50 border-border/50 focus:border-neon-purple/50 focus:ring-neon-purple/20 text-sm"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
+            disabled={isThinking}
           />
           <Button
             size="icon"
-            className="bg-neon-purple hover:bg-neon-purple/80 text-background glow-purple"
+            className="bg-neon-purple hover:bg-neon-purple/80 text-background glow-purple h-9 w-9"
             onClick={handleSend}
-            disabled={!inputValue.trim()}
+            disabled={!inputValue.trim() || isThinking}
           >
-            <Send className="h-4 w-4" />
+            {isThinking ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          Press Enter to send, Shift+Enter for new line
+        <p className="text-[10px] text-muted-foreground mt-1">
+          Press Enter to send
         </p>
       </div>
     </div>

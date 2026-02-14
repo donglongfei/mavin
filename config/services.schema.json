@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Mavin Services Configuration",
+  "description": "Centralized configuration for all Mavin services, ports, and endpoints",
+  "type": "object",
+  "required": ["version", "services", "api", "paths"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Configuration version"
+    },
+    "services": {
+      "type": "object",
+      "description": "Service definitions",
+      "properties": {
+        "frontend": {
+          "type": "object",
+          "required": ["name", "type", "ports", "url"]
+        },
+        "backend": {
+          "type": "object",
+          "required": ["name", "type", "port", "url"]
+        },
+        "asr": {
+          "type": "object",
+          "required": ["name", "type", "port", "url"]
+        },
+        "tts": {
+          "type": "object",
+          "required": ["name", "type", "script"]
+        },
+        "openclaw": {
+          "type": "object",
+          "required": ["name", "type", "command"]
+        }
+      }
+    },
+    "api": {
+      "type": "object",
+      "required": ["baseUrl", "endpoints"],
+      "properties": {
+        "baseUrl": {
+          "type": "string",
+          "description": "Base URL for API server"
+        },
+        "endpoints": {
+          "type": "object",
+          "description": "API endpoint paths"
+        }
+      }
+    },
+    "paths": {
+      "type": "object",
+      "description": "File system paths",
+      "required": ["logs", "pids", "uploads", "audio"]
+    }
+  }
+}
