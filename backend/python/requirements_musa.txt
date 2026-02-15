@@ -1,0 +1,30 @@
+# MUSA-Native Voice Service Requirements
+# For Moore Threads GPU (S3000/S4000 series)
+
+# Core MUSA support
+torch>=2.2.0
+torch_musa  # Moore Threads MUSA toolkit - install from https://github.com/MooreThreads/torch_musa
+
+# MooER ASR dependencies
+transformers>=4.35.0
+librosa>=0.10.0
+soundfile>=0.12.1
+accelerate>=0.20.0
+
+# TTS options (install at least one)
+# Option 1: Piper TTS (recommended - fast, CPU-efficient)
+piper-tts>=1.2.0
+
+# Option 2: Coqui TTS (high quality, GPU-accelerated)
+TTS>=0.22.0
+
+# Option 3: Edge TTS (online, requires internet)
+edge-tts>=6.1.0
+
+# Audio processing
+scipy>=1.10.0
+numpy>=1.24.0
+
+# Additional utilities
+huggingface-hub>=0.19.0
+sentencepiece>=0.1.99

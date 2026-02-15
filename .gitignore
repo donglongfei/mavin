@@ -57,5 +57,19 @@ ENV/
 .temp/
 .tmp/
 
-# AI Models (too large for git)
+# AI Models and Large Files (too large for git)
 models/
+*.tar
+*.tar.gz
+*.bin
+*.pth
+*.onnx
+*.pb
+*.h5
+*.ckpt
+*.safetensors
+*.whl
+
+# Docker containers
+infra/docker/*.tar
+infra/docker/*.tar.gz

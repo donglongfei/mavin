@@ -1,0 +1,17 @@
+# Python requirements for Mavin Local Voice Service
+# Install with: pip install -r requirements.txt
+
+# ASR (Automatic Speech Recognition)
+faster-whisper>=0.10.0
+
+# TTS (Text-to-Speech)
+piper-tts>=1.2.0
+
+# MUSA GPU support (optional - for Moore Threads GPUs)
+# torch-musa  # Uncomment if you have MUSA GPU
+
+# CUDA GPU support (optional - for NVIDIA GPUs)
+# Install PyTorch with CUDA from: https://pytorch.org/get-started/locally/
+
+# CPU-only (default - works on all systems)
+# faster-whisper will use CPU if no GPU available
